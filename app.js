@@ -49,6 +49,12 @@ io.on("connection", (socket) => {
             })
         }
     });
+
+    socket.on('add-room', (roomName) => {
+        room.push({ name: roomName, user: [] });
+
+        io.emit('update-room', room)
+    })
 })
 
 app.get('/', (req, res) => {

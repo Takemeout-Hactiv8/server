@@ -12,11 +12,32 @@ const io = new Server(httpServer, {
     }
 });
 
+let room = [
+    {
+        name: 'Global Room',
+        user: [
+            {
+                socketId: '999999999999',
+                name: 'MASTER'
+            }
+        ]
+    }
+];
+
+io.on("connection", (socket) => {
+    room.forEach(e => {
+        if (e.user.length < 1) {
+            room = room.filter((element) => {
+                return element.name !== e.name
+            })
+            io.emit('update-room', room)
+        }
+    });
+    console.log(room);
+    socket.emit('newCome', room);
 
 
-
-
-
+})
 
 app.get('/', (req, res) => {
     res.send('<h1>Hello world</h1>');

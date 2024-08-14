@@ -1,14 +1,14 @@
 const express = require('express');
-const { createServer } = require("http");
+const { createServer } = require("https");
 const { Server } = require("socket.io");
 
 const app = express();
-const port = 3000;
+const port = 80;
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: 'http://localhost:5173'
+        origin: 'https://take-me-out-2ab1f.web.app'
     }
 });
 

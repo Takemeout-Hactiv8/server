@@ -54,6 +54,27 @@ io.on("connection", (socket) => {
         room.push({ name: roomName, user: [] });
 
         io.emit('update-room', room)
+    });
+
+    socket.on('join-room', (roomName) => {
+        if (room.find((e) => e.name === roomName)) {
+            room.find((e) => e.name === roomName).user.push({
+                socketId: socket.id,
+                name: socket.handshake.auth.name
+            })
+            console.log(room.find((e) => e.name === roomName).user, '<<< fi room ' + roomName)
+        } else {
+            room.push({
+                name: roomName,
+                user: [{
+                    socketId: socket.id,
+                    name: socket.handshake.auth.name
+                }]
+            })
+        }
+        socket.join(roomName)
+        io.emit('update-room', room)
+        io.to(roomName).emit('room-user', room.find((e) => e.name === roomName));
     })
 })
 

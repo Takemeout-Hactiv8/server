@@ -36,7 +36,19 @@ io.on("connection", (socket) => {
     console.log(room);
     socket.emit('newCome', room);
 
-
+    socket.on('sendChat', (chat, room) => {
+        if (room === " ") {
+            io.emit('chat-update', {
+                sender: socket.id,
+                chat: chat
+            })
+        } else {
+            io.to(room).emit('chat-update', {
+                sender: socket.id,
+                chat: chat
+            })
+        }
+    })
 })
 
 app.get('/', (req, res) => {

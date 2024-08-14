@@ -48,6 +48,12 @@ io.on("connection", (socket) => {
                 chat: chat
             })
         }
+    });
+
+    socket.on('add-room', (roomName) => {
+        room.push({ name: roomName, user: [] });
+
+        io.emit('update-room', room)
     })
 })
 

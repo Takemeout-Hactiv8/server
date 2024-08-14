@@ -12,7 +12,9 @@ const io = new Server(httpServer, {
     }
 });
 
-let room = [
+let room = [];
+
+let globalRoom = [
     {
         name: 'Global Room',
         user: [
@@ -34,17 +36,21 @@ io.on("connection", (socket) => {
         }
     });
     console.log(room);
+    console.log(socket.handshake.auth, '<<<');
     socket.emit('newCome', room);
+    socket.emit('globalRoom', globalRoom);
 
-    socket.on('sendChat', (chat, room) => {
+    socket.on('sendChat', (chat, room, nameSender) => {
         if (room === " ") {
             io.emit('chat-update', {
                 sender: socket.id,
+                name: nameSender,
                 chat: chat
             })
         } else {
             io.to(room).emit('chat-update', {
                 sender: socket.id,
+                name: nameSender,
                 chat: chat
             })
         }
@@ -56,11 +62,33 @@ io.on("connection", (socket) => {
         io.emit('update-room', room)
     });
 
+    socket.on('join-global', (roomName) => {
+        globalRoom.find((e) => e.name === roomName).user.push({
+            socketId: socket.id,
+            name: socket.handshake.auth.username,
+            gender: socket.handshake.auth.gender
+        })
+        console.log(globalRoom.find((e) => e.name === roomName).user, '<<< fi room ' + roomName)
+
+        socket.join(roomName)
+        io.emit('update-room-global', globalRoom)
+        io.to(roomName).emit('room-user', globalRoom.find((e) => e.name === roomName));
+    });
+
+    socket.on('global-room-out', (roomName) => {
+        globalRoom.find((e) => e.name === roomName).user = globalRoom.find((e) => e.name === roomName).user.filter(ou => {
+            return ou.socketId !== socket.id;
+        })
+        io.to(roomName).emit('room-user', globalRoom.find((e) => e.name === roomName));
+        io.emit('update-room-global', globalRoom)
+    })
+
     socket.on('join-room', (roomName) => {
         if (room.find((e) => e.name === roomName)) {
             room.find((e) => e.name === roomName).user.push({
                 socketId: socket.id,
-                name: socket.handshake.auth.name
+                name: socket.handshake.auth.username,
+                gender: socket.handshake.auth.gender
             })
             console.log(room.find((e) => e.name === roomName).user, '<<< fi room ' + roomName)
         } else {
@@ -68,7 +96,8 @@ io.on("connection", (socket) => {
                 name: roomName,
                 user: [{
                     socketId: socket.id,
-                    name: socket.handshake.auth.name
+                    name: socket.handshake.auth.username,
+                    gender: socket.handshake.auth.gender
                 }]
             })
         }

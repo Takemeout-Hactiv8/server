@@ -75,6 +75,14 @@ io.on("connection", (socket) => {
         socket.join(roomName)
         io.emit('update-room', room)
         io.to(roomName).emit('room-user', room.find((e) => e.name === roomName));
+    });
+
+    socket.on('room-out', (roomName) => {
+        room.find((e) => e.name === roomName).user = room.find((e) => e.name === roomName).user.filter(ou => {
+            return ou.socketId !== socket.id;
+        })
+        io.to(roomName).emit('room-user', room.find((e) => e.name === roomName));
+        io.emit('update-room', room)
     })
 })
 
